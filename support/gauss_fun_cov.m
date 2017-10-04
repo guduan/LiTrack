@@ -28,9 +28,9 @@ function [covm] = gauss_fun_cov(t,dy,b,c,d)
 
 %===============================================================================
 da = 1;
-db = gauss_fun_dB(t,c,d);
-dc = gauss_fun_dC(t,b,c,d);
-dd = gauss_fun_dD(t,b,c,d);
+db = gauss_fun_db(t,c,d);
+dc = gauss_fun_dc(t,b,c,d);
+dd = gauss_fun_dd(t,b,c,d);
 h(1,1) = sum( 1./ dy .^2); 
 h(2,2) = sum( db .^ 2 ./ dy .^2); 
 h(3,3) = sum( dc .^ 2 ./ dy .^2); 

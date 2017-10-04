@@ -3919,7 +3919,7 @@ function SAVE_Callback(hObject, eventdata, handles)
 %uiwait(msgbox(['Want to save into file: ' handles.inp_struc.save_fn],'CAUTION','modal'))
 inp_struc = handles.inp_struc;
 %str = [handles.save_dir '/' handles.inp_struc.save_fn];
-str = [handles.save_dir '\' handles.inp_struc.save_fn];
+str = [handles.save_dir filesep handles.inp_struc.save_fn];
 %cmnd = ['save ' str ' inp_struc'];
 cmnd = ['save(''' str ''',''inp_struc'')'];
 eval(cmnd)
