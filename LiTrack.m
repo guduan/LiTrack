@@ -322,11 +322,13 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     wakeon = beamline{j,5};		% wakeON=1,2, wakeOFF=0
     Lacc   = beamline{j,6};		% length of acc section (scales wake) [m]
     phir   = phi*pi/180;      % RF phase in radians
-    if iscell(wakeon) || wakeon  % if wakes calc switched ON...
+    if iscell(wakeon) || ischar(wakeon) || wakeon  % if wakes calc switched ON...
       iswake = 1;             % turns wake plot on
       
       if iscell(wakeon)
           wake_fn1 = wakeon{1};
+      elseif ischar(wakeon)
+          wake_fn1 = wakeon;
       else
           nwake_fn = length(wake_fn(:,1));		        % count number of files provided
           if wakeon > nwake_fn
@@ -348,7 +350,7 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
       Eacc = -dE_loss + (Eacc - mean(E))/cos(phir);	% Eacc was final energy, now is acc-volts again [GeV]
     end
     Erf = E + Eacc*cos(phir + 2*pi*z/lam);	% energy of each particle from RF shape alone (no wake yet)
-    if iscell(wakeon) || wakeon
+    if iscell(wakeon) || ischar(wakeon) || wakeon
       E = Erf + dE_wakes*1E-3;		% energy from RF phase and wake added [GeV]
     else
       E = Erf;                % energy from RF phase and NO wake added [GeV]
