@@ -76,25 +76,22 @@ handles.codesc = get(handles.popupmenu1,'String');		% all possible codes in 1st 
 for j = 1:length(handles.codesc)
   handles.codes(j)=str2int(handles.codesc{j});	% convert cells to integer array
 end
+handles.inp_struc.beamline = cell(25, 6);
+handles.inp_struc.beamline(:) = {0};
 for j = 1:25
-  cmnd = ['set(handles.radiobutton' int2str(j) ',''Value'',0)'];
-  eval(cmnd)
+  set(handles.(sprintf('radiobutton%i', j)), 'Value', 0) 
   handles.inp_struc.p(j) = 0;
-  cmnd = ['contents = get(handles.popupmenu' int2str(j) ',''String'');'];
-  eval(cmnd);
-  cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*str2double(contents{get(handles.popupmenu' int2str(j) ',''Value'')});'];
-  eval(cmnd);
+  pop = handles.(sprintf('popupmenu%i', j));
+  contents = get(pop, 'String');
+  handles.inp_struc.beamline{j, 1} = sign(0.5-handles.inp_struc.p(j))*str2double(contents{get(pop,'Value')});
   for n = 1:5
-    cmnd = ['handles.inp_struc.beamline(' int2str(j) ',' int2str(n+1) ') = str2double(get(handles.edit' int2str(5*(j-1)+n) ' ,''String''));'];
-    eval(cmnd)
+    handles.inp_struc.beamline{j, n} = str2double(get(handles.(sprintf('edit%i', 5*(j-1)+n)), 'String'));
   end
-  cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-  eval(cmnd)
-  enable_disable_beamline(j,x,handles)
+  enable_disable_beamline(j, handles.inp_struc.beamline{j, 1}, handles)
 end
 set(handles.radiobutton1,'Value',1);			% set first plot radiobutton initially ON (better initial demo)
 handles.inp_struc.p(1) = 1;
-handles.inp_struc.beamline(1,1) = sign(0.5-handles.inp_struc.p(1))*str2double(contents{get(handles.popupmenu1,'Value')});
+handles.inp_struc.beamline{1, 1} = sign(0.5-handles.inp_struc.p(1))*str2double(contents{get(handles.popupmenu1,'Value')});
 if nargin == 3,
   wake_dir = pwd;
   file_dir = pwd;
@@ -191,12 +188,12 @@ if handles.inp_struc.Int==0					% if need external zd-file...
   end
 end
 for j = 1:25
-  cod = abs(handles.inp_struc.beamline(j,1));
+  cod = abs(handles.inp_struc.beamline{j, 1});
   if cod==99
     break
   elseif cod ==10 || cod ==11
-	x = handles.inp_struc.beamline(j,5);
-	if x > handles.N_wake_files
+	x = handles.inp_struc.beamline{j, 5};
+	if isnumeric(x) && (x > handles.N_wake_files)
 	  warndlg(['''WakeON'' pointer ''' int2str(x) ''' on line #' int2str(j) ' is too large for number of available wakefield files (' int2str(handles.N_wake_files) ') - try again.'],'No Such Wakefield')
       run_ok = 0;
 	  break
@@ -381,23 +378,6 @@ set(handles.blegend,'String',str)
 set(handles.blegend,'FontName',fontname)
 set(handles.blegend,'FontSize',fontsize)
 
-
-% --- Executes on button press in radiobutton1.
-function radiobutton1_Callback(hObject, eventdata, handles)
-% Hint: get(hObject,'Value') returns toggle state of radiobutton1
-%handles.inp_struc.p(1) = get(handles.radiobutton1,'Value');
-%handles.inp_struc.beamline(1,1) = sign(0.5-handles.inp_struc.p(1))*abs(handles.inp_struc.beamline(1,1));
-j = 1;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes on selection change in popupmenu1.
 function popupmenu1_Callback(hObject, eventdata, handles)
 % Hints: contents = get(hObject,'String') returns popupmenu1 contents as cell array
@@ -422,33 +402,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit1_Callback(hObject, eventdata, handles)
-j=1;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit1_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit2_Callback(hObject, eventdata, handles)
-j=2;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -458,32 +416,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function edit3_Callback(hObject, eventdata, handles)
-j=3;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit3_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit4_Callback(hObject, eventdata, handles)
-j=4;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -493,36 +430,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit5_Callback(hObject, eventdata, handles)
-j=5;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit5_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton2.
-function radiobutton2_Callback(hObject, eventdata, handles)
-j = 2;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu2.
 function popupmenu2_Callback(hObject, eventdata, handles)
@@ -545,33 +457,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit6_Callback(hObject, eventdata, handles)
-j=6;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit6_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit7_Callback(hObject, eventdata, handles)
-j=7;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -580,34 +470,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit8_Callback(hObject, eventdata, handles)
-j=8;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit8_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit9_Callback(hObject, eventdata, handles)
-j=9;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -617,36 +484,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit10_Callback(hObject, eventdata, handles)
-j=10;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit10_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton3.
-function radiobutton3_Callback(hObject, eventdata, handles)
-j = 3;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu3.
 function popupmenu3_Callback(hObject, eventdata, handles)
@@ -669,33 +511,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit11_Callback(hObject, eventdata, handles)
-j=11;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit11_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit12_Callback(hObject, eventdata, handles)
-j=12;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -705,33 +525,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit13_Callback(hObject, eventdata, handles)
-j=13;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit13_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit14_Callback(hObject, eventdata, handles)
-j=14;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -741,38 +539,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit15_Callback(hObject, eventdata, handles)
-j=15;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit15_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-
-% --- Executes on button press in radiobutton4.
-function radiobutton4_Callback(hObject, eventdata, handles)
-j = 4;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu4.
 function popupmenu4_Callback(hObject, eventdata, handles)
@@ -795,33 +566,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit16_Callback(hObject, eventdata, handles)
-j=16;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit16_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit17_Callback(hObject, eventdata, handles)
-j=17;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -831,33 +580,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit18_Callback(hObject, eventdata, handles)
-j=18;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit18_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit19_Callback(hObject, eventdata, handles)
-j=19;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -867,36 +594,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit20_Callback(hObject, eventdata, handles)
-j=20;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit20_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton5.
-function radiobutton5_Callback(hObject, eventdata, handles)
-j = 5;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu5.
 function popupmenu5_Callback(hObject, eventdata, handles)
@@ -919,33 +621,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit21_Callback(hObject, eventdata, handles)
-j=21;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit21_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit22_Callback(hObject, eventdata, handles)
-j=22;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -955,33 +635,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit23_Callback(hObject, eventdata, handles)
-j=23;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit23_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit24_Callback(hObject, eventdata, handles)
-j=24;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -991,36 +649,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit25_Callback(hObject, eventdata, handles)
-j=25;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit25_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton6.
-function radiobutton6_Callback(hObject, eventdata, handles)
-j = 6;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu6.
 function popupmenu6_Callback(hObject, eventdata, handles)
@@ -1043,33 +676,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit26_Callback(hObject, eventdata, handles)
-j=26;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit26_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit27_Callback(hObject, eventdata, handles)
-j=27;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1078,35 +689,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit28_Callback(hObject, eventdata, handles)
-j=28;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit28_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit29_Callback(hObject, eventdata, handles)
-j=29;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit29_CreateFcn(hObject, eventdata, handles)
@@ -1115,36 +702,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit30_Callback(hObject, eventdata, handles)
-j=30;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit30_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton7.
-function radiobutton7_Callback(hObject, eventdata, handles)
-j = 7;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu7.
 function popupmenu7_Callback(hObject, eventdata, handles)
@@ -1168,32 +730,11 @@ end
 
 
 
-function edit31_Callback(hObject, eventdata, handles)
-j=31;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit31_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit32_Callback(hObject, eventdata, handles)
-j=32;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1203,33 +744,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit33_Callback(hObject, eventdata, handles)
-j=33;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit33_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit34_Callback(hObject, eventdata, handles)
-j=34;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1239,36 +758,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit35_Callback(hObject, eventdata, handles)
-j=35;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit35_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton8.
-function radiobutton8_Callback(hObject, eventdata, handles)
-j = 8;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu8.
 function popupmenu8_Callback(hObject, eventdata, handles)
@@ -1291,17 +785,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit36_Callback(hObject, eventdata, handles)
-j=36;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit36_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1309,33 +792,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit37_Callback(hObject, eventdata, handles)
-j=37;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit37_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit38_Callback(hObject, eventdata, handles)
-j=38;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1346,16 +807,6 @@ end
 
 
 
-function edit39_Callback(hObject, eventdata, handles)
-j=39;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit39_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1363,36 +814,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit40_Callback(hObject, eventdata, handles)
-j=40;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit40_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton9.
-function radiobutton9_Callback(hObject, eventdata, handles)
-j = 9;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu9.
 function popupmenu9_Callback(hObject, eventdata, handles)
@@ -1415,33 +841,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit41_Callback(hObject, eventdata, handles)
-j=41;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit41_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit42_Callback(hObject, eventdata, handles)
-j=42;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 % --- Executes during object creation, after setting all properties.
 function edit42_CreateFcn(hObject, eventdata, handles)
@@ -1450,33 +854,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit43_Callback(hObject, eventdata, handles)
-j=43;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit43_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit44_Callback(hObject, eventdata, handles)
-j=44;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1487,35 +869,11 @@ end
 
 
 
-function edit45_Callback(hObject, eventdata, handles)
-j=45;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit45_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton10.
-function radiobutton10_Callback(hObject, eventdata, handles)
-j = 10;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu10.
 function popupmenu10_Callback(hObject, eventdata, handles)
@@ -1539,16 +897,6 @@ end
 
 
 
-function edit46_Callback(hObject, eventdata, handles)
-j=46;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit46_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1556,15 +904,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit47_Callback(hObject, eventdata, handles)
-j=47;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1575,32 +914,12 @@ end
 
 
 
-function edit48_Callback(hObject, eventdata, handles)
-j=48;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit48_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit49_Callback(hObject, eventdata, handles)
-j=49;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1611,35 +930,11 @@ end
 
 
 
-function edit50_Callback(hObject, eventdata, handles)
-j=50;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit50_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton11.
-function radiobutton11_Callback(hObject, eventdata, handles)
-j = 11;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu11.
 function popupmenu11_Callback(hObject, eventdata, handles)
@@ -1663,16 +958,6 @@ end
 
 
 
-function edit51_Callback(hObject, eventdata, handles)
-j=51;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit51_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1681,50 +966,17 @@ end
 
 
 
-function edit52_Callback(hObject, eventdata, handles)
-j=52;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit52_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit53_Callback(hObject, eventdata, handles)
-j=53;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit53_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit54_Callback(hObject, eventdata, handles)
-j=54;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1734,36 +986,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit55_Callback(hObject, eventdata, handles)
-j=55;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit55_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton12.
-function radiobutton12_Callback(hObject, eventdata, handles)
-j = 12;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu12.
 function popupmenu12_Callback(hObject, eventdata, handles)
@@ -1786,33 +1013,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit56_Callback(hObject, eventdata, handles)
-j=56;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit56_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit57_Callback(hObject, eventdata, handles)
-j=57;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1821,34 +1026,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit58_Callback(hObject, eventdata, handles)
-j=58;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit58_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit59_Callback(hObject, eventdata, handles)
-j=59;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1857,37 +1039,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit60_Callback(hObject, eventdata, handles)
-j=60;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit60_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton13.
-function radiobutton13_Callback(hObject, eventdata, handles)
-j = 13;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu13.
 function popupmenu13_Callback(hObject, eventdata, handles)
@@ -1909,52 +1065,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit61_Callback(hObject, eventdata, handles)
-j=61;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit61_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit62_Callback(hObject, eventdata, handles)
-j=62;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit62_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit63_Callback(hObject, eventdata, handles)
-j=63;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1964,17 +1085,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit64_Callback(hObject, eventdata, handles)
-j=64;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit64_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1982,36 +1092,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit65_Callback(hObject, eventdata, handles)
-j=65;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit65_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton14.
-function radiobutton14_Callback(hObject, eventdata, handles)
-j = 14;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu14.
 function popupmenu14_Callback(hObject, eventdata, handles)
@@ -2034,33 +1119,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit66_Callback(hObject, eventdata, handles)
-j=66;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit66_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit67_Callback(hObject, eventdata, handles)
-j=67;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2069,35 +1132,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit68_Callback(hObject, eventdata, handles)
-j=68;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit68_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit69_Callback(hObject, eventdata, handles)
-j=69;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit69_CreateFcn(hObject, eventdata, handles)
@@ -2106,36 +1145,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit70_Callback(hObject, eventdata, handles)
-j=70;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit70_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton15.
-function radiobutton15_Callback(hObject, eventdata, handles)
-j = 15;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu15.
 function popupmenu15_Callback(hObject, eventdata, handles)
@@ -2158,51 +1172,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit71_Callback(hObject, eventdata, handles)
-j=71;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit71_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit72_Callback(hObject, eventdata, handles)
-j=72;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit72_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit73_Callback(hObject, eventdata, handles)
-j=73;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2212,54 +1192,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit74_Callback(hObject, eventdata, handles)
-j=74;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit74_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit75_Callback(hObject, eventdata, handles)
-j=75;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit75_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton16.
-function radiobutton16_Callback(hObject, eventdata, handles)
-j = 16;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu16.
 function popupmenu16_Callback(hObject, eventdata, handles)
@@ -2282,34 +1225,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit76_Callback(hObject, eventdata, handles)
-j=76;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit76_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit77_Callback(hObject, eventdata, handles)
-j=77;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit77_CreateFcn(hObject, eventdata, handles)
@@ -2318,34 +1238,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit78_Callback(hObject, eventdata, handles)
-j=78;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit78_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit79_Callback(hObject, eventdata, handles)
-j=79;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit79_CreateFcn(hObject, eventdata, handles)
@@ -2354,36 +1251,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit80_Callback(hObject, eventdata, handles)
-j=80;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit80_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton17.
-function radiobutton17_Callback(hObject, eventdata, handles)
-j = 17;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu17.
 function popupmenu17_Callback(hObject, eventdata, handles)
@@ -2405,34 +1277,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit81_Callback(hObject, eventdata, handles)
-j=81;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit81_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit82_Callback(hObject, eventdata, handles)
-j=82;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2442,34 +1291,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit83_Callback(hObject, eventdata, handles)
-j=83;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit83_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit84_Callback(hObject, eventdata, handles)
-j=84;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit84_CreateFcn(hObject, eventdata, handles)
@@ -2477,37 +1303,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit85_Callback(hObject, eventdata, handles)
-j=85;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit85_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton18.
-function radiobutton18_Callback(hObject, eventdata, handles)
-j = 18;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu18.
 function popupmenu18_Callback(hObject, eventdata, handles)
@@ -2530,33 +1330,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit86_Callback(hObject, eventdata, handles)
-j=86;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit86_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit87_Callback(hObject, eventdata, handles)
-j=87;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2566,33 +1344,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit88_Callback(hObject, eventdata, handles)
-j=88;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit88_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit89_Callback(hObject, eventdata, handles)
-j=89;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -2602,36 +1358,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit90_Callback(hObject, eventdata, handles)
-j=90;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit90_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton19.
-function radiobutton19_Callback(hObject, eventdata, handles)
-j = 19;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu19.
 function popupmenu19_Callback(hObject, eventdata, handles)
@@ -2653,35 +1384,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit91_Callback(hObject, eventdata, handles)
-j=91;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit91_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit92_Callback(hObject, eventdata, handles)
-j=92;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit92_CreateFcn(hObject, eventdata, handles)
@@ -2690,34 +1397,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit93_Callback(hObject, eventdata, handles)
-j=93;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit93_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit94_Callback(hObject, eventdata, handles)
-j=94;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit94_CreateFcn(hObject, eventdata, handles)
@@ -2725,37 +1409,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit95_Callback(hObject, eventdata, handles)
-j=95;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit95_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton20.
-function radiobutton20_Callback(hObject, eventdata, handles)
-j = 20;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu20.
 function popupmenu20_Callback(hObject, eventdata, handles)
@@ -2777,35 +1435,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit96_Callback(hObject, eventdata, handles)
-j=96;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit96_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit97_Callback(hObject, eventdata, handles)
-j=97;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit97_CreateFcn(hObject, eventdata, handles)
@@ -2814,34 +1448,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit98_Callback(hObject, eventdata, handles)
-j=98;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit98_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit99_Callback(hObject, eventdata, handles)
-j=99;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit99_CreateFcn(hObject, eventdata, handles)
@@ -2849,37 +1460,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit100_Callback(hObject, eventdata, handles)
-j=100;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit100_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton21.
-function radiobutton21_Callback(hObject, eventdata, handles)
-j = 21;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu21.
 function popupmenu21_Callback(hObject, eventdata, handles)
@@ -2901,35 +1486,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit101_Callback(hObject, eventdata, handles)
-j=101;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit101_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit102_Callback(hObject, eventdata, handles)
-j=102;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit102_CreateFcn(hObject, eventdata, handles)
@@ -2937,35 +1498,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit103_Callback(hObject, eventdata, handles)
-j=103;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit103_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit104_Callback(hObject, eventdata, handles)
-j=104;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit104_CreateFcn(hObject, eventdata, handles)
@@ -2974,36 +1511,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit105_Callback(hObject, eventdata, handles)
-j=105;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit105_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton22.
-function radiobutton22_Callback(hObject, eventdata, handles)
-j = 22;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu22.
 function popupmenu22_Callback(hObject, eventdata, handles)
@@ -3026,34 +1538,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit106_Callback(hObject, eventdata, handles)
-j=106;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit106_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit107_Callback(hObject, eventdata, handles)
-j=107;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit107_CreateFcn(hObject, eventdata, handles)
@@ -3061,35 +1550,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit108_Callback(hObject, eventdata, handles)
-j=108;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit108_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit109_Callback(hObject, eventdata, handles)
-j=109;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit109_CreateFcn(hObject, eventdata, handles)
@@ -3097,37 +1562,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit110_Callback(hObject, eventdata, handles)
-j=110;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit110_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton23.
-function radiobutton23_Callback(hObject, eventdata, handles)
-j = 23;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu23.
 function popupmenu23_Callback(hObject, eventdata, handles)
@@ -3149,35 +1588,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit111_Callback(hObject, eventdata, handles)
-j=111;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit111_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit112_Callback(hObject, eventdata, handles)
-j=112;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit112_CreateFcn(hObject, eventdata, handles)
@@ -3185,35 +1600,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit113_Callback(hObject, eventdata, handles)
-j=113;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit113_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit114_Callback(hObject, eventdata, handles)
-j=114;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit114_CreateFcn(hObject, eventdata, handles)
@@ -3221,37 +1612,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit115_Callback(hObject, eventdata, handles)
-j=115;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit115_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton24.
-function radiobutton24_Callback(hObject, eventdata, handles)
-j = 24;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu24.
 function popupmenu24_Callback(hObject, eventdata, handles)
@@ -3273,34 +1638,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit116_Callback(hObject, eventdata, handles)
-j=116;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit116_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit117_Callback(hObject, eventdata, handles)
-j=117;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -3310,34 +1652,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit118_Callback(hObject, eventdata, handles)
-j=118;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit118_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit119_Callback(hObject, eventdata, handles)
-j=119;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit119_CreateFcn(hObject, eventdata, handles)
@@ -3345,37 +1664,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit120_Callback(hObject, eventdata, handles)
-j=120;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit120_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-% --- Executes on button press in radiobutton25.
-function radiobutton25_Callback(hObject, eventdata, handles)
-j = 25;
-cmnd = ['handles.inp_struc.p(j) = get(handles.radiobutton' int2str(j) ',''Value'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(handles.inp_struc.beamline(' int2str(j) ',1));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes on selection change in popupmenu25.
 function popupmenu25_Callback(hObject, eventdata, handles)
@@ -3397,35 +1690,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit121_Callback(hObject, eventdata, handles)
-j=121;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit121_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit122_Callback(hObject, eventdata, handles)
-j=122;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit122_CreateFcn(hObject, eventdata, handles)
@@ -3433,35 +1702,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit123_Callback(hObject, eventdata, handles)
-j=123;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit123_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function edit124_Callback(hObject, eventdata, handles)
-j=124;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function edit124_CreateFcn(hObject, eventdata, handles)
@@ -3469,24 +1714,11 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
-function edit125_Callback(hObject, eventdata, handles)
-j=125;k=floor((j-1)/5)+1;n=mod(j-1,5)+2;
-cmnd = ['handles.inp_struc.beamline(' int2str(k) ',' int2str(n) ') = str2double(get(hObject,''String''));'];
-eval(cmnd)
-cmnd = ['x = handles.inp_struc.beamline(' int2str(k) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function edit125_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 
 function Nelectrons_Callback(hObject, eventdata, handles)
@@ -3835,9 +2067,15 @@ if strcmp(get(handles.figure1,'SelectionType'),'open')
   [path,name,ext] = fileparts(filename);
   switch ext
   case '.mat'
-    cmnd = ['load ' handles.save_dir '/' name ext];
-    eval(cmnd)
+    raw = load([handles.save_dir filesep name ext]);
+    inp_struc = raw.inp_struc;
     set(handles.MSGBOX,'String',['Loaded from: ' name ext])
+    
+    % change old format matrix to new cell style
+    if ~iscell(inp_struc.beamline)
+        inp_struc.beamline = num2cell(inp_struc.beamline);
+    end
+    
     handles.inp_struc = inp_struc;
     if handles.inp_struc.Int==1
 	  set(handles.Internal,'Value',1)
@@ -3860,15 +2098,15 @@ if strcmp(get(handles.figure1,'SelectionType'),'open')
 	  handles.file_names = file_names;		% can't get this array loaded in load_filelistbox ???
 	  ifn = strcmp(handles.inp_struc.zd_file,handles.file_names);
 	  ind = find(ifn==1);
-	  if length(ind)>0
+	  if ~isempty(ind)
 	    x = ind(1);
 	  else
 		warndlg(['File ' handles.file_dir '/' handles.inp_struc.zd_file ' does not exist'],'Particle File Missing')
 		x = 1;
 	  end
       set(handles.filelistbox,'Value',x);
-	end
-	handles.inp_struc.save_fn = [name ext];
+    end
+    handles.inp_struc.save_fn = [name ext];
     set(handles.savename,'String',handles.inp_struc.save_fn)
 	set(handles.Nelectrons,'String',num2str(handles.inp_struc.Ne/1E10))
 	set(handles.Energy0,'String',num2str(handles.inp_struc.E0))
@@ -3883,9 +2121,9 @@ if strcmp(get(handles.figure1,'SelectionType'),'open')
 	set(handles.PLOTFRAC,'String',num2str(handles.inp_struc.plot_frac))
 %	update beamline array display panel, from file
 	for j = 1:25
-	  cmnd = ['set(handles.radiobutton' int2str(j) ',''Value'',' int2str(handles.inp_struc.p(j)) ');'];
-	  eval(cmnd)
-	  code = abs(handles.inp_struc.beamline(j,1));
+      set(handles.(sprintf('radiobutton%i', j)), 'Value', handles.inp_struc.p(j))
+      set(handles.radiobutton1,'Value',0);
+	  code = abs(handles.inp_struc.beamline{j, 1});
     icode = find(code==handles.codes);
 	  if length(icode)~=1
 	    errordlg(['Beamline file has an unavailable function code=' int2str(code)],'File Error');
@@ -3893,12 +2131,9 @@ if strcmp(get(handles.figure1,'SelectionType'),'open')
 	  cmnd = ['set(handles.popupmenu' int2str(j) ',''Value'',' int2str(icode) ');'];
 	  eval(cmnd);
 	  for n = 1:5
-		cmnd = ['set(handles.edit' int2str(5*(j-1)+n) ',''String'',handles.inp_struc.beamline(' int2str(j) ',' int2str(n+1) '));'];
-		eval(cmnd)
+          set(handles.(sprintf('edit%i', 5*(j-1)+n)), 'String', handles.inp_struc.beamline{j, n + 1});
 	  end
-	  cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-	  eval(cmnd)
-      enable_disable_beamline(j,x,handles)
+      enable_disable_beamline(j, handles.inp_struc.beamline{j, 1}, handles)
 	end
   otherwise
 	errordlg(lasterr,'File Type is not .MAT','modal')
@@ -3918,6 +2153,7 @@ end
 function SAVE_Callback(hObject, eventdata, handles)
 %uiwait(msgbox(['Want to save into file: ' handles.inp_struc.save_fn],'CAUTION','modal'))
 inp_struc = handles.inp_struc;
+
 %str = [handles.save_dir '/' handles.inp_struc.save_fn];
 str = [handles.save_dir filesep handles.inp_struc.save_fn];
 %cmnd = ['save ' str ' inp_struc'];
@@ -4015,3 +2251,180 @@ function popupmenu17_KeyPressFcn(hObject, eventdata, handles)
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
 % handles    structure with handles and user data (see GUIDATA)
+
+function array_callback(row, col, hObject, handles)
+    % Append beamline cell array with value. Tries to make a double of it.
+    % in case it fails it assumes string.
+
+    raw = get(hObject, 'String');
+    val = str2double(raw);
+    if isnan(val)
+        val = raw;
+    end
+    
+    handles.inp_struc.beamline{row, col + 1} = val;
+    guidata(hObject, handles);
+    update_blegend(handles.inp_struc.beamline{row, 1}, handles)
+
+function radio_callback(ind, hObject, handles)
+    handles.inp_struc.p(ind) = get(handles.(sprintf('radiobutton%i', ind)), 'Value');
+    handles.inp_struc.beamline{ind, 1} = sign(0.5-handles.inp_struc.p(ind)) * abs(handles.inp_struc.beamline{3, 1});
+    update_blegend(handles.inp_struc.beamline{ind, 1}, handles)
+    guidata(hObject, handles);    
+    
+% Auto generated code for all the callbacks of the edits.
+% for row = 1:25
+%    for col = 1:5
+%       fprintf('function edit%i_Callback(hObject, ~, handles),', col + row*5 - 5)
+%       fprintf('array_callback(%i, %i, hObject, handles)\n', row, col)
+%    end
+% end
+% Auto generated code for all the callbacks of the radiobuttons
+% for i = 1:15
+%    fprintf('function radiobutton%i_Callback(hObject, ~, handles),', i)
+%    fprintf('radio_callback(%i, hObject, handles)\n', i)
+% end
+
+%% edit callbacks
+function edit1_Callback(hObject, ~, handles),array_callback(1, 1, hObject, handles)
+function edit2_Callback(hObject, ~, handles),array_callback(1, 2, hObject, handles)
+function edit3_Callback(hObject, ~, handles),array_callback(1, 3, hObject, handles)
+function edit4_Callback(hObject, ~, handles),array_callback(1, 4, hObject, handles)
+function edit5_Callback(hObject, ~, handles),array_callback(1, 5, hObject, handles)
+function edit6_Callback(hObject, ~, handles),array_callback(2, 1, hObject, handles)
+function edit7_Callback(hObject, ~, handles),array_callback(2, 2, hObject, handles)
+function edit8_Callback(hObject, ~, handles),array_callback(2, 3, hObject, handles)
+function edit9_Callback(hObject, ~, handles),array_callback(2, 4, hObject, handles)
+function edit10_Callback(hObject, ~, handles),array_callback(2, 5, hObject, handles)
+function edit11_Callback(hObject, ~, handles),array_callback(3, 1, hObject, handles)
+function edit12_Callback(hObject, ~, handles),array_callback(3, 2, hObject, handles)
+function edit13_Callback(hObject, ~, handles),array_callback(3, 3, hObject, handles)
+function edit14_Callback(hObject, ~, handles),array_callback(3, 4, hObject, handles)
+function edit15_Callback(hObject, ~, handles),array_callback(3, 5, hObject, handles)
+function edit16_Callback(hObject, ~, handles),array_callback(4, 1, hObject, handles)
+function edit17_Callback(hObject, ~, handles),array_callback(4, 2, hObject, handles)
+function edit18_Callback(hObject, ~, handles),array_callback(4, 3, hObject, handles)
+function edit19_Callback(hObject, ~, handles),array_callback(4, 4, hObject, handles)
+function edit20_Callback(hObject, ~, handles),array_callback(4, 5, hObject, handles)
+function edit21_Callback(hObject, ~, handles),array_callback(5, 1, hObject, handles)
+function edit22_Callback(hObject, ~, handles),array_callback(5, 2, hObject, handles)
+function edit23_Callback(hObject, ~, handles),array_callback(5, 3, hObject, handles)
+function edit24_Callback(hObject, ~, handles),array_callback(5, 4, hObject, handles)
+function edit25_Callback(hObject, ~, handles),array_callback(5, 5, hObject, handles)
+function edit26_Callback(hObject, ~, handles),array_callback(6, 1, hObject, handles)
+function edit27_Callback(hObject, ~, handles),array_callback(6, 2, hObject, handles)
+function edit28_Callback(hObject, ~, handles),array_callback(6, 3, hObject, handles)
+function edit29_Callback(hObject, ~, handles),array_callback(6, 4, hObject, handles)
+function edit30_Callback(hObject, ~, handles),array_callback(6, 5, hObject, handles)
+function edit31_Callback(hObject, ~, handles),array_callback(7, 1, hObject, handles)
+function edit32_Callback(hObject, ~, handles),array_callback(7, 2, hObject, handles)
+function edit33_Callback(hObject, ~, handles),array_callback(7, 3, hObject, handles)
+function edit34_Callback(hObject, ~, handles),array_callback(7, 4, hObject, handles)
+function edit35_Callback(hObject, ~, handles),array_callback(7, 5, hObject, handles)
+function edit36_Callback(hObject, ~, handles),array_callback(8, 1, hObject, handles)
+function edit37_Callback(hObject, ~, handles),array_callback(8, 2, hObject, handles)
+function edit38_Callback(hObject, ~, handles),array_callback(8, 3, hObject, handles)
+function edit39_Callback(hObject, ~, handles),array_callback(8, 4, hObject, handles)
+function edit40_Callback(hObject, ~, handles),array_callback(8, 5, hObject, handles)
+function edit41_Callback(hObject, ~, handles),array_callback(9, 1, hObject, handles)
+function edit42_Callback(hObject, ~, handles),array_callback(9, 2, hObject, handles)
+function edit43_Callback(hObject, ~, handles),array_callback(9, 3, hObject, handles)
+function edit44_Callback(hObject, ~, handles),array_callback(9, 4, hObject, handles)
+function edit45_Callback(hObject, ~, handles),array_callback(9, 5, hObject, handles)
+function edit46_Callback(hObject, ~, handles),array_callback(10, 1, hObject, handles)
+function edit47_Callback(hObject, ~, handles),array_callback(10, 2, hObject, handles)
+function edit48_Callback(hObject, ~, handles),array_callback(10, 3, hObject, handles)
+function edit49_Callback(hObject, ~, handles),array_callback(10, 4, hObject, handles)
+function edit50_Callback(hObject, ~, handles),array_callback(10, 5, hObject, handles)
+function edit51_Callback(hObject, ~, handles),array_callback(11, 1, hObject, handles)
+function edit52_Callback(hObject, ~, handles),array_callback(11, 2, hObject, handles)
+function edit53_Callback(hObject, ~, handles),array_callback(11, 3, hObject, handles)
+function edit54_Callback(hObject, ~, handles),array_callback(11, 4, hObject, handles)
+function edit55_Callback(hObject, ~, handles),array_callback(11, 5, hObject, handles)
+function edit56_Callback(hObject, ~, handles),array_callback(12, 1, hObject, handles)
+function edit57_Callback(hObject, ~, handles),array_callback(12, 2, hObject, handles)
+function edit58_Callback(hObject, ~, handles),array_callback(12, 3, hObject, handles)
+function edit59_Callback(hObject, ~, handles),array_callback(12, 4, hObject, handles)
+function edit60_Callback(hObject, ~, handles),array_callback(12, 5, hObject, handles)
+function edit61_Callback(hObject, ~, handles),array_callback(13, 1, hObject, handles)
+function edit62_Callback(hObject, ~, handles),array_callback(13, 2, hObject, handles)
+function edit63_Callback(hObject, ~, handles),array_callback(13, 3, hObject, handles)
+function edit64_Callback(hObject, ~, handles),array_callback(13, 4, hObject, handles)
+function edit65_Callback(hObject, ~, handles),array_callback(13, 5, hObject, handles)
+function edit66_Callback(hObject, ~, handles),array_callback(14, 1, hObject, handles)
+function edit67_Callback(hObject, ~, handles),array_callback(14, 2, hObject, handles)
+function edit68_Callback(hObject, ~, handles),array_callback(14, 3, hObject, handles)
+function edit69_Callback(hObject, ~, handles),array_callback(14, 4, hObject, handles)
+function edit70_Callback(hObject, ~, handles),array_callback(14, 5, hObject, handles)
+function edit71_Callback(hObject, ~, handles),array_callback(15, 1, hObject, handles)
+function edit72_Callback(hObject, ~, handles),array_callback(15, 2, hObject, handles)
+function edit73_Callback(hObject, ~, handles),array_callback(15, 3, hObject, handles)
+function edit74_Callback(hObject, ~, handles),array_callback(15, 4, hObject, handles)
+function edit75_Callback(hObject, ~, handles),array_callback(15, 5, hObject, handles)
+function edit76_Callback(hObject, ~, handles),array_callback(16, 1, hObject, handles)
+function edit77_Callback(hObject, ~, handles),array_callback(16, 2, hObject, handles)
+function edit78_Callback(hObject, ~, handles),array_callback(16, 3, hObject, handles)
+function edit79_Callback(hObject, ~, handles),array_callback(16, 4, hObject, handles)
+function edit80_Callback(hObject, ~, handles),array_callback(16, 5, hObject, handles)
+function edit81_Callback(hObject, ~, handles),array_callback(17, 1, hObject, handles)
+function edit82_Callback(hObject, ~, handles),array_callback(17, 2, hObject, handles)
+function edit83_Callback(hObject, ~, handles),array_callback(17, 3, hObject, handles)
+function edit84_Callback(hObject, ~, handles),array_callback(17, 4, hObject, handles)
+function edit85_Callback(hObject, ~, handles),array_callback(17, 5, hObject, handles)
+function edit86_Callback(hObject, ~, handles),array_callback(18, 1, hObject, handles)
+function edit87_Callback(hObject, ~, handles),array_callback(18, 2, hObject, handles)
+function edit88_Callback(hObject, ~, handles),array_callback(18, 3, hObject, handles)
+function edit89_Callback(hObject, ~, handles),array_callback(18, 4, hObject, handles)
+function edit90_Callback(hObject, ~, handles),array_callback(18, 5, hObject, handles)
+function edit91_Callback(hObject, ~, handles),array_callback(19, 1, hObject, handles)
+function edit92_Callback(hObject, ~, handles),array_callback(19, 2, hObject, handles)
+function edit93_Callback(hObject, ~, handles),array_callback(19, 3, hObject, handles)
+function edit94_Callback(hObject, ~, handles),array_callback(19, 4, hObject, handles)
+function edit95_Callback(hObject, ~, handles),array_callback(19, 5, hObject, handles)
+function edit96_Callback(hObject, ~, handles),array_callback(20, 1, hObject, handles)
+function edit97_Callback(hObject, ~, handles),array_callback(20, 2, hObject, handles)
+function edit98_Callback(hObject, ~, handles),array_callback(20, 3, hObject, handles)
+function edit99_Callback(hObject, ~, handles),array_callback(20, 4, hObject, handles)
+function edit100_Callback(hObject, ~, handles),array_callback(20, 5, hObject, handles)
+function edit101_Callback(hObject, ~, handles),array_callback(21, 1, hObject, handles)
+function edit102_Callback(hObject, ~, handles),array_callback(21, 2, hObject, handles)
+function edit103_Callback(hObject, ~, handles),array_callback(21, 3, hObject, handles)
+function edit104_Callback(hObject, ~, handles),array_callback(21, 4, hObject, handles)
+function edit105_Callback(hObject, ~, handles),array_callback(21, 5, hObject, handles)
+function edit106_Callback(hObject, ~, handles),array_callback(22, 1, hObject, handles)
+function edit107_Callback(hObject, ~, handles),array_callback(22, 2, hObject, handles)
+function edit108_Callback(hObject, ~, handles),array_callback(22, 3, hObject, handles)
+function edit109_Callback(hObject, ~, handles),array_callback(22, 4, hObject, handles)
+function edit110_Callback(hObject, ~, handles),array_callback(22, 5, hObject, handles)
+function edit111_Callback(hObject, ~, handles),array_callback(23, 1, hObject, handles)
+function edit112_Callback(hObject, ~, handles),array_callback(23, 2, hObject, handles)
+function edit113_Callback(hObject, ~, handles),array_callback(23, 3, hObject, handles)
+function edit114_Callback(hObject, ~, handles),array_callback(23, 4, hObject, handles)
+function edit115_Callback(hObject, ~, handles),array_callback(23, 5, hObject, handles)
+function edit116_Callback(hObject, ~, handles),array_callback(24, 1, hObject, handles)
+function edit117_Callback(hObject, ~, handles),array_callback(24, 2, hObject, handles)
+function edit118_Callback(hObject, ~, handles),array_callback(24, 3, hObject, handles)
+function edit119_Callback(hObject, ~, handles),array_callback(24, 4, hObject, handles)
+function edit120_Callback(hObject, ~, handles),array_callback(24, 5, hObject, handles)
+function edit121_Callback(hObject, ~, handles),array_callback(25, 1, hObject, handles)
+function edit122_Callback(hObject, ~, handles),array_callback(25, 2, hObject, handles)
+function edit123_Callback(hObject, ~, handles),array_callback(25, 3, hObject, handles)
+function edit124_Callback(hObject, ~, handles),array_callback(25, 4, hObject, handles)
+function edit125_Callback(hObject, ~, handles),array_callback(25, 5, hObject, handles)
+
+%% radio callbacks
+function radiobutton1_Callback(hObject, ~, handles),radio_callback(1, hObject, handles)
+function radiobutton2_Callback(hObject, ~, handles),radio_callback(2, hObject, handles)
+function radiobutton3_Callback(hObject, ~, handles),radio_callback(3, hObject, handles)
+function radiobutton4_Callback(hObject, ~, handles),radio_callback(4, hObject, handles)
+function radiobutton5_Callback(hObject, ~, handles),radio_callback(5, hObject, handles)
+function radiobutton6_Callback(hObject, ~, handles),radio_callback(6, hObject, handles)
+function radiobutton7_Callback(hObject, ~, handles),radio_callback(7, hObject, handles)
+function radiobutton8_Callback(hObject, ~, handles),radio_callback(8, hObject, handles)
+function radiobutton9_Callback(hObject, ~, handles),radio_callback(9, hObject, handles)
+function radiobutton10_Callback(hObject, ~, handles),radio_callback(10, hObject, handles)
+function radiobutton11_Callback(hObject, ~, handles),radio_callback(11, hObject, handles)
+function radiobutton12_Callback(hObject, ~, handles),radio_callback(12, hObject, handles)
+function radiobutton13_Callback(hObject, ~, handles),radio_callback(13, hObject, handles)
+function radiobutton14_Callback(hObject, ~, handles),radio_callback(14, hObject, handles)
+function radiobutton15_Callback(hObject, ~, handles),radio_callback(15, hObject, handles)

@@ -1,4 +1,4 @@
-function [zposj,dE_Ej,Ebarj,dFWpctj,ZFWmmj,z_barj,Ebarcutsj,fcutj,sigzGj,sigEGj,I_pkj,I_pkfj] = litrack_for_gui(fn,seed,z0in,dQ_Q,param,blnew,inp_struc,wake_fn);
+function [zposj,dE_Ej,Ebarj,dFWpctj,ZFWmmj,z_barj,Ebarcutsj,fcutj,sigzGj,sigEGj,I_pkj,I_pkfj] = LiTrack(fn,seed,z0in,dQ_Q,param,blnew,inp_struc,wake_fn)
 
 %	[zposj,dE_Ej,Ebarj,dFWpctj,ZFWmmj,z_barj,Ebarcutsj,fcutj,sigzGj,sigEGj] = litrack_for_gui(fn[,seed,z0in,dQ_Q,param,blnew,inp_struc,wake_fn]);
 %
@@ -72,11 +72,7 @@ function [zposj,dE_Ej,Ebarj,dFWpctj,ZFWmmj,z_barj,Ebarcutsj,fcutj,sigzGj,sigEGj,
 
 fontsize = 14;
 
-% Add needed subfolders
-root_folder = fileparts(mfilename('fullpath'));
-addpath(genpath(root_folder))
-
-if exist('inp_struc')				% if run from the LiTrack GUI, all input from this structure, not from file or other input arguments
+if exist('inp_struc', 'var')				% if run from the LiTrack GUI, all input from this structure, not from file or other input arguments
   [beamline,inp,Ne,E0,sigz0,sigd0,Nesim,z0_bar,d0_bar,asym,Nbin,sz_scale,nsamp,gzfit,gdfit,plot_frac,splots,comment,contf] = ...
 				LiTrack_struc2params(inp_struc);		% convert LiTrack GUI input data structure to nominal LiTrack parameters
   fnfm = 'GUI';
@@ -85,69 +81,69 @@ else
   disp(' ')
   disp(['LiTrack started:' start_time])
   disp(' ')
-  if ~exist('fn')           % if beamline-file name not input... ask for it
+  if ~exist('fn', 'var')           % if beamline-file name not input... ask for it
     fn = input('LITRACK input file descriptor (*_lit.m assumed): ','s');
   end
-  if ~exist('sz_scale')     % z scalar defaults to 1
+  if ~exist('sz_scale', 'var')     % z scalar defaults to 1
     sz_scale = 1;
   end
   fnf  = [fn '_lit'];				% build string as file name of beamline-file (BL_file)
   fnfm = [fnf '.m'];				% build string as file name of beamline-file (BL_file) including ".m"
-  if ~exist(fnf)                	% if file does not exist, bomb out
+  if ~exist(fnf, 'var')                	% if file does not exist, bomb out
     error(['File: ' fnfm ' does not exist'])
   end
   Ne = 0;                   % must initialize "Ne" before "eval" to make vs. 7.0.1 work (Nov. 2, 2004)
   eval(fnf);                % run BL-file which is just an M-file (*.m)
-  if exist('blnew')					% if a replacement beamline is being used...
+  if exist('blnew', 'var')					% if a replacement beamline is being used...
     beamline = blnew;				% overwrite the just-read-in beamline with this (see rand_litrack.m)
   end
-  if ~exist('gzfit')				% default to no gaussian fits for Z-distribution
+  if ~exist('gzfit', 'var')				% default to no gaussian fits for Z-distribution
     gzfit = 0;
   end
-  if ~exist('gdfit')				% default to no gaussian fits for dE/E distribution
+  if ~exist('gdfit', 'var')				% default to no gaussian fits for dE/E distribution
     gdfit = 0;
   end
-  if ~exist('contf')				% default to scatter plot, rather than color z-d image
+  if ~exist('contf', 'var')				% default to scatter plot, rather than color z-d image
     contf = 0;
   end
-  if ~exist('asym')					% default to no dist. asymmetry
+  if ~exist('asym', 'var')					% default to no dist. asymmetry
     asym = 0;
   end
-  if ~exist('plot_frac')		% default to 2% of particles plotted in delta-z scatter plots
+  if ~exist('plot_frac', 'var')		% default to 2% of particles plotted in delta-z scatter plots
     plot_frac = 0.02;
   else
-    if plot_frac > 1 | plot_frac <= 0
+    if plot_frac > 1 || plot_frac <= 0
       error('PLOT_FRAC must be > 0 and <= 1...  quitting.')
     end
   end
-  if ~exist('wake_fn')			% default to SLAC.DAT point-charge S-band wakefield file
+  if ~exist('wake_fn', 'var')			% default to SLAC.DAT point-charge S-band wakefield file
      wake_fn = 'slac.dat';
   end
-  if ~exist('splots')
+  if ~exist('splots', 'var')
     splots = 0;             % default to big plots (splots=1 gives publish-size plots and no wake plots)
   end
-  if ~exist('nsamp');				% default to using all input file points
+  if ~exist('nsamp', 'var');				% default to using all input file points
     nsamp = 1;
   end
 end
 
-if ~exist('unif_halo')
+if ~exist('unif_halo', 'var')
   unif_halo = 0;					% set =1 if you want uniform z and E halo (Aug. 5, 2002 - PE)
 end
-if ~exist('seed')					% random seed used (defaults to 1)
+if ~exist('seed', 'var')					% random seed used (defaults to 1)
   seed = 1;
 end
-if ~exist('tail')					% default to no dist. tail
+if ~exist('tail', 'var')					% default to no dist. tail
   tail = 0;
 end
-if ~exist('cut')					% default to no dist. cuts
+if ~exist('cut', 'var')					% default to no dist. cuts
   cut = 10;
 end
-if ~exist('halo')					% default to no dist. 1%-halo
+if ~exist('halo', 'var')					% default to no dist. 1%-halo
   halo = 0;
   halo_pop = 0;           % halo relative population defaults to zero  
 end
-if exist('param')
+if exist('param', 'var')
   if param == 0
     noparam = 1;
   else
@@ -159,10 +155,10 @@ if exist('param')
 else
   noparam = 1;
 end
-if exist('z0in')
+if exist('z0in', 'var')
   z0_bar = z0_bar + z0in*1E-3;	% add LiTrack input 'phase' offset
 end
-if exist('dQ_Q')
+if exist('dQ_Q', 'var')
   if abs(dQ_Q) > 0.8
     error('dQ_Q is > 80%, this seems unreasonable - quitting.')
   end
@@ -270,7 +266,7 @@ else                              % if BL-file specifies the Z & dE/E are to be 
 end
 
 if Nbin < 10              % bomb out if BL-file specifies <10 for Z and dE/E binning
-  error(sprintf('Nbin = %g cannot be less than 10',Nbin))
+  error('Nbin = %g cannot be less than 10', Nbin)
 end
 
 % Start doing real calculations:
@@ -285,7 +281,7 @@ if nb < 1					                % need at least one beamline section (even a 99 to
 end
 
 if noparam==0
-  beamline(param(2),param(3)) = param(1);	% used to scan a parameter using 'scan_litrack_param.m'
+  beamline{param(2),param(3)} = param(1);	% used to scan a parameter using 'scan_litrack_param.m'
 end
 
 Ne0    = Ne1;           % save N electrons to get fraction lost
@@ -302,7 +298,7 @@ z_bar  = 1E3*mean(z);		% mean z-position [mm]
 sigz   = sigz0;      		% rms bunch length (w.r.t. mean) [m]
 sigd   = sigd0;      		% rms relative energy spread [ ]
 for j  = 1:nb           % loop over all beamline sections of BL-file
-  cod  = beamline(j,1);	% beamline section code (e.g. 11=accelerator section - from K. Bane convention)
+  cod  = beamline{j, 1};	% beamline section code (e.g. 11=accelerator section - from K. Bane convention)
 
   if (abs(cod)==1)			% do-nothing code (e.g., used to plot input beam)
 %	do nothing - plot only if cod=-1 (see below)
@@ -314,25 +310,30 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     disp(['2-column ASCII output file written: [z(mm) dE/E(%)]: ' fnout])
   end
   
-  if (abs(cod)==11)	| (abs(cod)==10)	% ACCELERATION SECTION (11 and 10)
+  if (abs(cod)==11)	|| (abs(cod)==10)	% ACCELERATION SECTION (11 and 10)
     ecuts = 0;                % no dE/E cuts shown on plots
     zcuts = 0;                % no Z cuts shown on plots
-    Eacc   = beamline(j,2);		% nominal acc (w/o wake and for phi=crest(=0)) [GeV]
-    phi    = beamline(j,3);		% acc phase (crest=0, low-E head at phi < 0) [deg]
-    lam    = beamline(j,4);		% RF wavelength [m]
+    Eacc   = beamline{j,2};		% nominal acc (w/o wake and for phi=crest(=0)) [GeV]
+    phi    = beamline{j,3};		% acc phase (crest=0, low-E head at phi < 0) [deg]
+    lam    = beamline{j,4};		% RF wavelength [m]
     if lam<=0
       error('RF wavelength cannot be <= 0')
     end
-    wakeon = beamline(j,5);		% wakeON=1,2, wakeOFF=0
-    Lacc   = beamline(j,6);		% length of acc section (scales wake) [m]
+    wakeon = beamline{j,5};		% wakeON=1,2, wakeOFF=0
+    Lacc   = beamline{j,6};		% length of acc section (scales wake) [m]
     phir   = phi*pi/180;      % RF phase in radians
-    if wakeon                 % if wakes calc switched ON...
+    if iscell(wakeon) || wakeon  % if wakes calc switched ON...
       iswake = 1;             % turns wake plot on
-      nwake_fn = length(wake_fn(:,1));		        % count number of files provided
-      if wakeon > nwake_fn
-        error('Need multiple wake function file names when "wakeON/OFF" > 1')
+      
+      if iscell(wakeon)
+          wake_fn1 = wakeon{1};
+      else
+          nwake_fn = length(wake_fn(:,1));		        % count number of files provided
+          if wakeon > nwake_fn
+            error('Need multiple wake function file names when "wakeON/OFF" > 1')
+          end
+          wake_fn1 = wake_fn(wakeon,:);			        % select proper wake function depending on wakeon (=1,2,...)
       end
-      wake_fn1 = wake_fn(wakeon,:);			        % select proper wake function depending on wakeon (=1,2,...)
       disp(['Using wake function: ' wake_fn1])		% echo wake file being used
       [dE_wake,zc_wake] = long_wake(z,Lacc,Ne1,...
                           Nbin,wake_fn1);	        % calculate dE_wake in MeV from Z-coordinates, acc length, N-particles, etc.
@@ -347,7 +348,7 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
       Eacc = -dE_loss + (Eacc - mean(E))/cos(phir);	% Eacc was final energy, now is acc-volts again [GeV]
     end
     Erf = E + Eacc*cos(phir + 2*pi*z/lam);	% energy of each particle from RF shape alone (no wake yet)
-    if wakeon
+    if iscell(wakeon) || wakeon
       E = Erf + dE_wakes*1E-3;		% energy from RF phase and wake added [GeV]
     else
       E = Erf;                % energy from RF phase and NO wake added [GeV]
@@ -365,14 +366,14 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   if abs(cod) == 13           % energy feedback with two phase-opposed sections, each of eV0 volts @ crest
     ecuts = 0;                % no dE/E cuts shown on plots
     zcuts = 0;                % no Z cuts shown on plots
-    Efin   = beamline(j,2);		% Energy setpoint (goal) [GeV]
-    eV0    = beamline(j,3);		% acc. voltage available at crest for each of two fdbk sections [GeV]
+    Efin   = beamline{j,2};		% Energy setpoint (goal) [GeV]
+    eV0    = beamline{j,3};		% acc. voltage available at crest for each of two fdbk sections [GeV]
     if eV0==0
       error('Feedback voltage of zero will not correct energy')
     end
-    phi1r  = beamline(j,4)*pi/180;  % acc phase of 1st section (crest=0, low-E head at phi < 0) [deg]
-    phi2r  = beamline(j,5)*pi/180;	% acc phase of 2nd section (crest=0, low-E head at phi < 0) [deg]
-    lam    = beamline(j,6);         % RF wavelength [m]
+    phi1r  = beamline{j,4}*pi/180;  % acc phase of 1st section (crest=0, low-E head at phi < 0) [deg]
+    phi2r  = beamline{j,5}*pi/180;	% acc phase of 2nd section (crest=0, low-E head at phi < 0) [deg]
+    lam    = beamline{j,6};         % RF wavelength [m]
     if lam<=0
       error('RF wavelength cannot be <= 0')
     end
@@ -391,11 +392,11 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   end                           % end code==13, energy feedback card
   
   if abs(cod)==15               % resistive-wall wakefield (15)
-    r0   = beamline(j,2);		% Beam-pipe radius [m]
-    Lng  = beamline(j,3);		% Beam-pipe length [m]
-    sigc = beamline(j,4);		% Surface conductivity [(Ohm-m)^-1]
-	tau  = beamline(j,5);		% relaxation time (sec) - if =zero, use DC wake
-	rf   = beamline(j,6);		% rf=1: cylindrical chamber,  rf=2: parallel plates chamber
+    r0   = beamline{j,2};		% Beam-pipe radius [m]
+    Lng  = beamline{j,3};		% Beam-pipe length [m]
+    sigc = beamline{j,4};		% Surface conductivity [(Ohm-m)^-1]
+	tau  = beamline{j,5};		% relaxation time (sec) - if =zero, use DC wake
+	rf   = beamline{j,6};		% rf=1: cylindrical chamber,  rf=2: parallel plates chamber
     if r0<=0
       error('Resistive-wall wake cannot be calculated for negative or zero radius')
     end
@@ -429,14 +430,14 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   end
 
   if abs(cod)==16               % de-chirper longitudinal wakefield (16)
-    r0   = beamline(j,2);		% Pipe radius [m]
-    Lng  = beamline(j,3);		% Pipe length [m]
-%   p    = beamline(j,4);		% period of corrugation (m) (p << r0)
-%	g    = beamline(j,5);		% gap between corregations (m)
-    p_g  = beamline(j,4);		% period/gap of corrugation ( ) (0 < p/g < 2)
-%	d    = beamline(j,6);		% depth of corrugation (m) (d << r0, d >~ p)
-	d    = beamline(j,5);		% depth of corrugation (m) (d << r0)
-    rc   = beamline(j,6);		% rc=0: cylindrical chamber,  rc=1: rectangular chamber
+    r0   = beamline{j,2};		% Pipe radius [m]
+    Lng  = beamline{j,3};		% Pipe length [m]
+%   p    = beamline{j,4};		% period of corrugation (m) (p << r0)
+%	g    = beamline{j,5};		% gap between corregations (m)
+    p_g  = beamline{j,4};		% period/gap of corrugation ( ) (0 < p/g < 2)
+%	d    = beamline{j,6};		% depth of corrugation (m) (d << r0, d >~ p)
+	d    = beamline{j,5};		% depth of corrugation (m) (d << r0)
+    rc   = beamline{j,6};		% rc=0: cylindrical chamber,  rc=1: rectangular chamber
     if r0<=0
       error('De-chirper wake cannot be calculated for negative or zero radius')
     end
@@ -482,9 +483,9 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   end
 
   if abs(cod)==17           % CSR (17)
-    L    = beamline(j,2);		% Bend magnet length [m]
-    theta= beamline(j,3);		% Bend magnet angle [rad]
-    Nbends = beamline(j,4);	% Number of bend magnets [ ]
+    L    = beamline{j,2};		% Bend magnet length [m]
+    theta= beamline{j,3};		% Bend magnet angle [rad]
+    Nbends = beamline{j,4};	% Number of bend magnets [ ]
     if L<0
       error('CSR bend cannot be calculated for negative length')
     end
@@ -505,8 +506,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   
   if abs(cod) == 26           % USER'S ENERGY CUTS (26) - doesn't change Ebar
     ecuts = 1;                % show dE/E cuts on plots
-    d1 = beamline(j,2);				% minimum dE/E to allow through [ ]
-    d2 = beamline(j,3);				% maximum dE/E "   "     "      [ ]
+    d1 = beamline{j,2};				% minimum dE/E to allow through [ ]
+    d2 = beamline{j,3};				% maximum dE/E "   "     "      [ ]
     if d1 >= d2               % bomb out if max<min (BT-file error)
       error(['Energy cuts (26) must have dE/E_min (col 2) < dE/E_max (col3) in ' fnfm])
     end
@@ -526,8 +527,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   
   if abs(cod) == 28         % Notch collimator for M. Hogan
 %    ecuts = 1;             % show dE/E cuts on plots
-    d1 = beamline(j,2);     % minimum dE/E for notch-collimator edge [ ]
-    d2 = beamline(j,3);     % maximum dE/E for notch-collimator edge [ ]
+    d1 = beamline{j,2};     % minimum dE/E for notch-collimator edge [ ]
+    d2 = beamline{j,3};     % maximum dE/E for notch-collimator edge [ ]
     if d1 >= d2             % bomb out if max<min (BT-file error)
       error(['Notch-collimator (28) must have dE/E_min (col 2) < dE/E_max (col3) in ' fnfm])
     end
@@ -547,8 +548,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   
   if abs(cod) == 29         % USER'S ABSOLUTE ENERGY CUTS (29)
     ecuts = 1;					    % show dE/E cuts on plots
-    E1 = beamline(j,2);			% minimum E to allow through [GeV]
-    E2 = beamline(j,3);			% maximum E "   "     "      [GeV]
+    E1 = beamline{j,2};			% minimum E to allow through [GeV]
+    E2 = beamline{j,3};			% maximum E "   "     "      [GeV]
 	d1 = E1/Ebar - 1;
 	d2 = E2/Ebar - 1;
     if E1 >= E2					    % bomb out if max<min (BT-file error)
@@ -572,7 +573,7 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   if abs(cod) == 25				  % AUTO-APERTURTE ENERGY WINDOW CUTS (25) - doesn't change Ebar
     ecuts = 1;					    % show dE/E cuts on plots
     iswake = 0;					    % turn off induced voltage plot
-    dw = beamline(j,2);			% energy width to allow (max and min set to maximize transmission) [ ]
+    dw = beamline{j,2};			% energy width to allow (max and min set to maximize transmission) [ ]
     dspan = max(d) - min(d);  		% get full span of dE/E
     if dw >= dspan/2				% if E-window is >= 1/2 of full dE/E span...
       Nbin0 = 1;				    % 1-bin needed
@@ -631,8 +632,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   
   if abs(cod) == 27                     % USER'S constant-dN/N dE/E cuts (27)
 %    zcuts = 1;                         % show dE/E-cuts on plots
-    dN_N = beamline(j,2);               % fraction of max-dE/E-amplitude particles to cut [ ]
-    no_charge_loss = beamline(j,3);			% if==1, no real charge cut intended, just better binning
+    dN_N = beamline{j,2};               % fraction of max-dE/E-amplitude particles to cut [ ]
+    no_charge_loss = beamline{j,3};			% if==1, no real charge cut intended, just better binning
     [dsort,idsort] = sort(abs(d-mean(d)));	% sort the absolute value of dE/E values (min to max)
     N1 = round(Nesim*dN_N);			        % throw out last N1 particles
     z(idsort((Nesim-N1):Nesim)) = [];		% now throw them out of zpos
@@ -648,8 +649,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   end
   
   if abs(cod) == 35				    		% narrow in on small z-width
-    zw1 = beamline(j,2);			    % the full width in z to find peak current in [mm]
-    zw2 = beamline(j,3);			    % the full width in z to find peak current in [mm]
+    zw1 = beamline{j,2};			    % the full width in z to find peak current in [mm]
+    zw2 = beamline{j,3};			    % the full width in z to find peak current in [mm]
 	zbar = mean(z);                 % z mean [mm]
     dz = z - zbar;                % subtract z mean [mm]
 	i  = find(abs(dz)<zw1/2);				% find all particles in this width around the mean
@@ -668,8 +669,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   
   if abs(cod) == 36               % USER'S Z-CUTS (36)
     zcuts = 1;					          % show Z-cuts on plots
-    z1 = beamline(j,2);				    % minimum Z to allow through [m]
-    z2 = beamline(j,3);				    % maximum Z "   "     "      [m]
+    z1 = beamline{j,2};				    % minimum Z to allow through [m]
+    z2 = beamline{j,3};				    % maximum Z "   "     "      [m]
     if z1 >= z2					          % bomb out if max<min (BT-file error)
       error(['Z-cuts (36) must have Z_min (col 2) < Z_max (col3) in ' fnfm])
     end
@@ -689,8 +690,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   
   if abs(cod) == 37                   % USER'S constant-dN/N z cuts (37)
 %    zcuts = 1;                       % show Z-cuts on plots
-    dN_N = beamline(j,2);			        % fraction of max-z-amplitude particles to cut [ ]
-    no_charge_loss = beamline(j,3);		% if==1, no real charge cut intended, just better binning
+    dN_N = beamline{j,2};			        % fraction of max-z-amplitude particles to cut [ ]
+    no_charge_loss = beamline{j,3};		% if==1, no real charge cut intended, just better binning
     [zsort,izsort] = sort(abs(z-mean(z)));	% sort the absolute value of zpos values (min to max)
     N1 = round(Nesim*dN_N);           % throw out last N1 particles
     z(izsort((Nesim-N1):Nesim)) = [];	% now throw them out of zpos
@@ -706,15 +707,15 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
   end
   
   if abs(cod) == 44             % add a temporal modulation
-    mod_amp = beamline(j,2);    % modulation rel. amplitude (typically 0.02 - 0.05)
-    mod_lam = beamline(j,3);    % modulation wavelength [m]
+    mod_amp = beamline{j,2};    % modulation rel. amplitude (typically 0.02 - 0.05)
+    mod_lam = beamline{j,3};    % modulation wavelength [m]
     z = z + mod_amp*mod_lam/2/pi*cos(2*pi*z/mod_lam);
     sigz = std(z);              % re-calc bunch length for next possible pass through wake calculations
   end
   
   if abs(cod) == 45             % add an energy modulation
-    mod_amp = beamline(j,2);    % energy modulation relative amplitude (e.g., 0.001 for 0.1%) [ ]
-    mod_lam = beamline(j,3);    % energy modulation wavelength [m]
+    mod_amp = beamline{j,2};    % energy modulation relative amplitude (e.g., 0.001 for 0.1%) [ ]
+    mod_lam = beamline{j,3};    % energy modulation wavelength [m]
     E = E.*(1 + mod_amp*sin(2*pi*z/mod_lam));	% modulate energy
     Ebar = mean(E);             % mean particle energy [GeV]
     Ebarcuts = Ebar;            % mean energy after cuts - same as Ebar here [GeV]
@@ -725,10 +726,10 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     ecuts = 0;                  % no dE/E cuts shown on plots
     zcuts = 0;                  % no Z cuts shown on plots
     iswake = 0;                 % turn off induced voltage plot
-    R56  = beamline(j,2);       % R56 value [m]
-    T566 = beamline(j,3);       % T566 value [m] (=-3*R56/2 for non-quad system)
-    U5666= beamline(j,5);       % U5666 value [m] (=2*R56 for non-quad system)
-    E56  = beamline(j,4);       % Nominal energy of compressor [GeV]
+    R56  = beamline{j,2};       % R56 value [m]
+    T566 = beamline{j,3};       % T566 value [m] (=-3*R56/2 for non-quad system)
+    U5666= beamline{j,5};       % U5666 value [m] (=2*R56 for non-quad system)
+    E56  = beamline{j,4};       % Nominal energy of compressor [GeV]
     if E56 < 0.020              % need positive, reasonable nominal R56-energy [GeV]
       disp(sprintf(['WARN: Compressor section (6) of R56=%7.4f m has nominal-energy too small (not ultra-relativistic) in ' fnfm],R56))
     end
@@ -742,8 +743,8 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     ecuts    = 0;               % no dE/E cuts shown on plots
     zcuts    = 0;               % no Z cuts shown on plots
     iswake   = 0;               % turn off induced voltage plot
-    R56      = beamline(j,2);   % R56 value [m]
-    dR56_R56 = beamline(j,4);   % relative R56 jitter 
+    R56      = beamline{j,2};   % R56 value [m]
+    dR56_R56 = beamline{j,4};   % relative R56 jitter 
     eps      = dR56_R56;            
     if R56>0
       error('R56 for chicane is always <0...  quitting')
@@ -753,7 +754,7 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     end
     T566 = -1.5*R56;            % T566 value [m]
     U5666=  2.0*R56;            % U5666 value [m]
-    E56  = beamline(j,3);       % Nominal energy of compressor [GeV]
+    E56  = beamline{j,3};       % Nominal energy of compressor [GeV]
     if E56 < 0.020              % need positive, reasonable nominal R56-energy [GeV]
       error(sprintf(['Chicane section (7) of R56=%7.4f m has nominal-energy too small (not ultra-relativistic) in ' fnfm],R56))
     end
@@ -769,10 +770,10 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     ecuts = 0;                  % no dE/E cuts shown on plots
     zcuts = 0;                  % no Z cuts shown on plots
     iswake = 0;                 % turn off induced voltage plot
-    K3   = beamline(j,2);       % octupole MAD k-value [m^-4]
-    Enom = beamline(j,3);       % Nominal energy in octupole [GeV]
-    Leff = beamline(j,4);       % effective magnetic length of octupole [m]
-    eta  = beamline(j,5);       % dispersion in octupole [m]
+    K3   = beamline{j,2};       % octupole MAD k-value [m^-4]
+    Enom = beamline{j,3};       % Nominal energy in octupole [GeV]
+    Leff = beamline{j,4};       % effective magnetic length of octupole [m]
+    eta  = beamline{j,5};       % dispersion in octupole [m]
     U5666 = K3*Leff*eta^4/6;
 	dd   = (E-Enom)/Enom;         % relative energy error w.r.t. nominal compressor energy
     z    = U5666*dd.^3 + z;     % distort bunch as per octupole, assuming in chicane center [m]
@@ -782,7 +783,7 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     ecuts  = 0;                 % no dE/E cuts shown on plots
     zcuts  = 0;                 % no Z cuts shown on plots
     iswake = 0;                 % turn off induced voltage plot
-    id_rms = beamline(j,2);     % rms incoherent relative energy spread to be added in quadrature [ ]
+    id_rms = beamline{j, 2};    % rms incoherent relative energy spread to be added in quadrature [ ]
 	  d = d + id_rms*randn(length(d),1);	% incread dE/E by the incoherent addition [ ]
     E = Ebar*(1 + d);           % load energy array [GeV]
   end
@@ -975,9 +976,18 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
       set(Hy,'VerticalAlignment','baseline');
       title(['\langle{\itE}\rangle='     sprintf('%5.3f',Ebarcuts) ...
              ' GeV, {\itN_e}=' sprintf('%5.3f',Ne1/1E10) '\times10^{10}'])
-      bml = num2str(beamline(j,:));
-      i   = findstr(bml,'  ');
-      bml(i) = [];
+         
+      % add cell support
+      bml = '[';
+      for item = beamline(j,:)
+          try
+            bml = [bml ' ' num2str(item{1})];
+          catch
+            bml = [bml ' ' num2str(item{1}{1})];
+          end
+      end
+      bml = [bml ']'];   
+            
       if splots==0
         if abs(cod) ~= 99
           text(scx(0.075),scy(0.02),[get_time ';  [' bml ']'])

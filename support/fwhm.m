@@ -1,4 +1,4 @@
-function [FW,i1,i2] = FWHM(X,NX,f);
+function [FW,i1,i2] = fwhm(X,NX,f);
 
 %	[FW,i1,i2] = FWHM(X,NX[,f]);
 %

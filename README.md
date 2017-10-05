@@ -60,3 +60,6 @@ questions or problems.
        Start Matlab, then in its command window, click the "File" pull-down menu, choose
        "Set Path...", and click "Add with Subfolders...", browse over to the new unzipped
        "LiTrack" folder, choose it, and then click "SAVE".
+
+# New Features
+- Allow path instead of number of wakefiles (eg element 11 col 4 can be a path)

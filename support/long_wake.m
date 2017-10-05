@@ -46,21 +46,20 @@ if sigz < 1E-6
   disp(' ')
 end
 
-if ~exist('L')
+if ~exist('L', 'var')
   L = 1; 					% default length of S-band linac [m]
 end
-if ~exist('Ne')
+if ~exist('Ne', 'var')
   Ne = 1; 					% default number of e- in bunch      
 end
-if ~exist('Nbin')
+if ~exist('Nbin', 'var')
   Nbin = 100;  				% default number simulation particles
 end
-if ~exist('fn')
+if ~exist('fn', 'var')
   fn = 'slac.dat';  		% default point wake
 end  
-if ~exist('pcwake')			% if a point-charge wake is not passed in, load default file
-  cmnd = ['load ' fn];
-  eval(cmnd);
+if ~exist('pcwake', 'var')	% if a point-charge wake is not passed in, load default file
+  eval(['load ' fn])
   idot = find(fn=='.');
   if isempty(idot)
     error('Point wake file name needs "." in name string')
