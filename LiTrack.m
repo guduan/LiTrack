@@ -461,15 +461,15 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
 %    if d<p/2
 %      warning('Corregation depth should be > period/2')
 %    end
-    if rc~=0 && rc~=1
-      error('Last paremeter in dechirper wake must be 0 or 1, for rectangular or cylindrical chambers')
+    if ~(strcmp(rc, 'circ') || strcmp(rc, 'rect'))
+      error('Last paremeter in dechirper wake must be "circ" or "rect", for rectangular or cylindrical chambers')
     end
     iswake = 1;				% turns wake plot on
 	zmax = 2.01*(max(z) - min(z));
     zpc = 0:(zmax/1000):zmax;
     p = 1E-3;                                               % p is taken as 1 mm [p/g is all that matters]
     g = p/(p_g);                                            % g is then as p*(g/p)
-    if rc == 0
+    if rc == 'circ'
   	  pcwakeW = dechirper_wakefield(zpc,r0,p,g,d);          % cylindrical dechirper-wake
     else
   	  pcwakeW = rec_dechirper_wakefield(zpc,r0,p,g,d);      % rectangular dechirper-wake

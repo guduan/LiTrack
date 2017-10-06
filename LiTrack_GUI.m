@@ -309,9 +309,9 @@ switch x
   case 13
     str = '13:E-fdbk E-goal/GV Eacc/GV phi1/deg phi2/deg lambda/m';
   case 15
-    str = '15:RW-wake radius/m   L/m  cond(Ohm-m) tau/s 0=cyl,1=r';
+    str = '15:RW-wake radius/m   L/m  cond(Ohm-m) tau/s 0=cyl';
   case 16
-    str = '16:Dechirp radius/m   L/m    per/gap depth/m 0=cyl,1=r';
+    str = '16:Dechirp radius/m   L/m    per/gap depth/m 0=cyl,circ/rect';
   case 17
     str = '17:CSR       L/m   angle/rad Nbends';
   case 22
