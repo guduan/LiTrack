@@ -63,3 +63,4 @@ questions or problems.
 
 # New Features
 - Allow path instead of number of wakefiles (eg element 11 col 4 can be a path)
+- Added names instead of numbers as popupmenu entries

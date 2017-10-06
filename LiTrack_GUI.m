@@ -140,10 +140,18 @@ load_savelistbox(save_dir,handles)
 guidata(hObject, handles);
 x = handles;
 save LiTrack_GUI.mat x
+
+% Write new strings to popups
+raw = {'Nothing', 'Dump', 'Compressor', 'Chicane', 'Linac', 'Linac', 'E-fdbk', ...
+    'RW-wake', 'Dechirper', 'CSR', 'Add ESprd', 'Auto Ecut', 'E-cut', 'con-N-Ecut', ...
+    'Ntch-col', 'Abs-Ecut', 'Z-cut', 'con-N-zcut', 't-modul', 'E-modul', 'terminate'};
+
+for i = 1:25
+    set(handles.(sprintf('popupmenu%i', i)), 'string', raw)
+end
+
 % UIWAIT makes LiTrack_GUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = LiTrack_GUI_OutputFcn(hObject, eventdata, handles) 
@@ -283,116 +291,55 @@ guidata(handles.figure1,handles)
 
 
 function update_blegend(x,handles)
-x = abs(x);
+    x = abs(x);
+
 switch x
   case 1
     str = '1: Do nothing but generate a plot (if "plot" is switched on)';
-    fontname = 'MS Sans Serif';
-    fontsize = 10;
   case 2
     str = '2: Dump 2-col ASCII file: LiTrack_zd_output.dat [z(mm) dE/E(%)]';
-    fontname = 'MS Sans Serif';
-    fontsize = 10;
   case 6
     str = '6:Compressor  R56/m  T566/m  Enom/GeV U5666/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 7
     str = '7:Chicane   R56/m   Enom/GeV dR56/R56';
-    fontname = 'Courier';
-    fontsize = 9;
   case 10
     str = '10:Linac   Etot/GeV phi/deg lambda/m  wakeON    L/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 11
     str = '11:Linac   dEacc/GeV phi/deg lambda/m wakeON    L/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 13
     str = '13:E-fdbk E-goal/GV Eacc/GV phi1/deg phi2/deg lambda/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 15
     str = '15:RW-wake radius/m   L/m  cond(Ohm-m) tau/s 0=cyl,1=r';
-    fontname = 'Courier';
-    fontsize = 9;
   case 16
     str = '16:Dechirp radius/m   L/m    per/gap depth/m 0=cyl,1=r';
-    fontname = 'Courier';
-    fontsize = 9;
   case 17
     str = '17:CSR       L/m   angle/rad Nbends';
-    fontname = 'Courier';
-    fontsize = 9;
   case 22
     str = '22:Add Esprd sigE/E';
-    fontname = 'Courier';
-    fontsize = 9;
   case 25
     str = '25:AutoEcut dE/E-wdth';
-    fontname = 'Courier';
-    fontsize = 9;
   case 26
     str = '26:E-cut  dE/E(min) dE/E(max)';
-    fontname = 'Courier';
-    fontsize = 9;
   case 27
     str = '27:con-N-Ecut dN/N';
-    fontname = 'Courier';
-    fontsize = 9;
   case 28
     str = '28:Ntch-col min-dE/E max-dE/E';
-    fontname = 'Courier';
-    fontsize = 9;
   case 29
     str = '29:Abs-Ecut E1/GeV   E2/GeV';
-    fontname = 'Courier';
-    fontsize = 9;
   case 36
     str = '36:Z-cut    min-Z/m  max-Z/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 37
     str = '37:con-N-zcut dN/N';
-    fontname = 'Courier';
-    fontsize = 9;
   case 44
     str = '44:t-modul rel-Amp  lambda/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 45
     str = '45:E-modul rel-Amp  lambda/m';
-    fontname = 'Courier';
-    fontsize = 9;
   case 99
     str = '99: (terminate tracking)';
-    fontname = 'MS Sans Serif';
-    fontsize = 10;
   otherwise
     str = [num2str(x) ': unknown LiTrack code number'];
-    fontsize = 10;
-    fontname = 'MS Sans Serif';
 end
-set(handles.blegend,'String',str)
-set(handles.blegend,'FontName',fontname)
-set(handles.blegend,'FontSize',fontsize)
-
-% --- Executes on selection change in popupmenu1.
-function popupmenu1_Callback(hObject, eventdata, handles)
-% Hints: contents = get(hObject,'String') returns popupmenu1 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu1
-%handles.inp_struc.beamline(1,1) = sign(0.5-handles.inp_struc.p(1))*abs(str2double(contents{get(hObject,'Value')}));
-j = 1;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
+set(handles.blegend,'String',str, 'FontName', 'MS Sans Serif')
 
 
 % --- Executes during object creation, after setting all properties.
@@ -436,20 +383,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu2.
-function popupmenu2_Callback(hObject, eventdata, handles)
-j = 2;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu2_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -489,20 +422,6 @@ function edit10_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu3.
-function popupmenu3_Callback(hObject, eventdata, handles)
-j = 3;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu3_CreateFcn(hObject, eventdata, handles)
@@ -545,20 +464,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu4.
-function popupmenu4_Callback(hObject, eventdata, handles)
-j = 4;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu4_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -599,20 +504,6 @@ function edit20_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu5.
-function popupmenu5_Callback(hObject, eventdata, handles)
-j = 5;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu5_CreateFcn(hObject, eventdata, handles)
@@ -655,20 +546,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu6.
-function popupmenu6_Callback(hObject, eventdata, handles)
-j = 6;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu6_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -707,20 +584,6 @@ function edit30_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu7.
-function popupmenu7_Callback(hObject, eventdata, handles)
-j = 7;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu7_CreateFcn(hObject, eventdata, handles)
@@ -764,20 +627,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu8.
-function popupmenu8_Callback(hObject, eventdata, handles)
-j = 8;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu8_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -820,20 +669,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu9.
-function popupmenu9_Callback(hObject, eventdata, handles)
-j = 9;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu9_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -875,20 +710,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu10.
-function popupmenu10_Callback(hObject, eventdata, handles)
-j = 10;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu10_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -902,8 +723,6 @@ function edit46_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
 
 
 % --- Executes during object creation, after setting all properties.
@@ -935,20 +754,6 @@ function edit50_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu11.
-function popupmenu11_Callback(hObject, eventdata, handles)
-j = 11;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu11_CreateFcn(hObject, eventdata, handles)
@@ -992,20 +797,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu12.
-function popupmenu12_Callback(hObject, eventdata, handles)
-j = 12;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu12_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1044,20 +835,6 @@ function edit60_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu13.
-function popupmenu13_Callback(hObject, eventdata, handles)
-j = 13;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu13_CreateFcn(hObject, eventdata, handles)
@@ -1098,20 +875,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu14.
-function popupmenu14_Callback(hObject, eventdata, handles)
-j = 14;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu14_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1150,20 +913,6 @@ function edit70_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu15.
-function popupmenu15_Callback(hObject, eventdata, handles)
-j = 15;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu15_CreateFcn(hObject, eventdata, handles)
@@ -1204,20 +953,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu16.
-function popupmenu16_Callback(hObject, eventdata, handles)
-j = 16;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu16_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1257,20 +992,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu17.
-function popupmenu17_Callback(hObject, eventdata, handles)
-j = 17;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu17_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1308,20 +1029,6 @@ function edit85_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu18.
-function popupmenu18_Callback(hObject, eventdata, handles)
-j = 18;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu18_CreateFcn(hObject, eventdata, handles)
@@ -1364,20 +1071,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu19.
-function popupmenu19_Callback(hObject, eventdata, handles)
-j = 19;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu19_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1414,20 +1107,6 @@ function edit95_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu20.
-function popupmenu20_Callback(hObject, eventdata, handles)
-j = 20;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu20_CreateFcn(hObject, eventdata, handles)
@@ -1466,20 +1145,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu21.
-function popupmenu21_Callback(hObject, eventdata, handles)
-j = 21;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu21_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1516,19 +1181,6 @@ function edit105_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu22.
-function popupmenu22_Callback(hObject, eventdata, handles)
-j = 22;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1568,20 +1220,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-% --- Executes on selection change in popupmenu23.
-function popupmenu23_Callback(hObject, eventdata, handles)
-j = 23;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
-
 % --- Executes during object creation, after setting all properties.
 function popupmenu23_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
@@ -1617,20 +1255,6 @@ function edit115_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu24.
-function popupmenu24_Callback(hObject, eventdata, handles)
-j = 24;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu24_CreateFcn(hObject, eventdata, handles)
@@ -1669,20 +1293,6 @@ function edit120_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-% --- Executes on selection change in popupmenu25.
-function popupmenu25_Callback(hObject, eventdata, handles)
-j = 25;
-cmnd = ['contents = get(hObject,''String'');'];
-eval(cmnd);
-cmnd = ['handles.inp_struc.beamline(' int2str(j) ',1) = sign(0.5-handles.inp_struc.p(' int2str(j) '))*abs(str2double(contents{get(hObject,''Value'')}));'];
-eval(cmnd);
-cmnd = ['x = handles.inp_struc.beamline(' int2str(j) ',1);'];
-eval(cmnd)
-update_blegend(x,handles)
-enable_disable_beamline(j,x,handles)
-guidata(hObject, handles);
-
 
 % --- Executes during object creation, after setting all properties.
 function popupmenu25_CreateFcn(hObject, eventdata, handles)
@@ -2270,8 +1880,18 @@ function radio_callback(ind, hObject, handles)
     handles.inp_struc.p(ind) = get(handles.(sprintf('radiobutton%i', ind)), 'Value');
     handles.inp_struc.beamline{ind, 1} = sign(0.5-handles.inp_struc.p(ind)) * abs(handles.inp_struc.beamline{3, 1});
     update_blegend(handles.inp_struc.beamline{ind, 1}, handles)
-    guidata(hObject, handles);    
+    guidata(hObject, handles);  
     
+function popup_callback(ind, hObject, handles)
+    val_ind = get(hObject, 'Value');
+    VAL = [1, 2, 6, 7, 10, 11, 13, 15, 16, 17, 22, 25, 26, 27, 28, 29, 36, 37, 44, 45, 99];
+    val = VAL(val_ind);
+    disp(val)
+    handles.inp_struc.beamline{ind, 1} = sign(0.5-handles.inp_struc.p(ind)) * abs(val);
+    update_blegend(handles.inp_struc.beamline{ind, 1}, handles)
+    enable_disable_beamline(ind, handles.inp_struc.beamline{ind, 1}, handles)
+    guidata(hObject, handles);
+      
 % Auto generated code for all the callbacks of the edits.
 % for row = 1:25
 %    for col = 1:5
@@ -2284,6 +1904,12 @@ function radio_callback(ind, hObject, handles)
 %    fprintf('function radiobutton%i_Callback(hObject, ~, handles),', i)
 %    fprintf('radio_callback(%i, hObject, handles)\n', i)
 % end
+% Auto generated code for all the callbacks of the popmenu
+% for i = 1:15
+%    fprintf('function popupmenu%i_Callback(hObject, ~, handles),', i)
+%    fprintf('popup_callback(%i, hObject, handles)\n', i)
+% end
+
 
 %% edit callbacks
 function edit1_Callback(hObject, ~, handles),array_callback(1, 1, hObject, handles)
@@ -2428,3 +2054,20 @@ function radiobutton12_Callback(hObject, ~, handles),radio_callback(12, hObject,
 function radiobutton13_Callback(hObject, ~, handles),radio_callback(13, hObject, handles)
 function radiobutton14_Callback(hObject, ~, handles),radio_callback(14, hObject, handles)
 function radiobutton15_Callback(hObject, ~, handles),radio_callback(15, hObject, handles)
+
+%% popup callbacks
+function popupmenu1_Callback(hObject, ~, handles),popup_callback(1, hObject, handles)
+function popupmenu2_Callback(hObject, ~, handles),popup_callback(2, hObject, handles)
+function popupmenu3_Callback(hObject, ~, handles),popup_callback(3, hObject, handles)
+function popupmenu4_Callback(hObject, ~, handles),popup_callback(4, hObject, handles)
+function popupmenu5_Callback(hObject, ~, handles),popup_callback(5, hObject, handles)
+function popupmenu6_Callback(hObject, ~, handles),popup_callback(6, hObject, handles)
+function popupmenu7_Callback(hObject, ~, handles),popup_callback(7, hObject, handles)
+function popupmenu8_Callback(hObject, ~, handles),popup_callback(8, hObject, handles)
+function popupmenu9_Callback(hObject, ~, handles),popup_callback(9, hObject, handles)
+function popupmenu10_Callback(hObject, ~, handles),popup_callback(10, hObject, handles)
+function popupmenu11_Callback(hObject, ~, handles),popup_callback(11, hObject, handles)
+function popupmenu12_Callback(hObject, ~, handles),popup_callback(12, hObject, handles)
+function popupmenu13_Callback(hObject, ~, handles),popup_callback(13, hObject, handles)
+function popupmenu14_Callback(hObject, ~, handles),popup_callback(14, hObject, handles)
+function popupmenu15_Callback(hObject, ~, handles),popup_callback(15, hObject, handles)
