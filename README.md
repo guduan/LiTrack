@@ -64,3 +64,6 @@ questions or problems.
 # New Features
 - Allow path instead of number of wakefiles (eg element 11 col 4 can be a path)
 - Added names instead of numbers as popupmenu entries
+
+# FAQ
+- If you postprocess something from LiTrack and your beamline contains cutting elements don't forget to filter the output matrixes.

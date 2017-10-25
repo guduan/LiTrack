@@ -1,4 +1,4 @@
-function [X,Y,Z,dx,dy] = contour_plot(x,y,Nx,Ny,fig);
+function [X,Y,Z,dx,dy] = contour_plot(x,y,Nx,Ny,fig)
 
 %	function [X,Y,Z,dx,dy] = contour_plot(x,y,Nx,Ny,fig);
 %
@@ -18,7 +18,7 @@ function [X,Y,Z,dx,dy] = contour_plot(x,y,Nx,Ny,fig);
 
 %==============================================================================
 
-if ~exist('fig')
+if ~exist('fig', 'var')
   fig = 1;
 end
 
@@ -61,7 +61,7 @@ if fig==1
   title(['{\it\sigma_x}' sprintf(' = %6.4f mm',Xrms)])
   enhance_plot('times',20,3);
   subplot(222)
-  [Yrms,Ymean,YArea] = rms_calc(Y*1E3,sum(Z'),0.02);
+  [Yrms,Ymean,YArea] = rms_calc(Y*1E3,sum(Z, 2),0.02);
   stairs(sum(Z'),Y*1E3,'b-')
   ylim([v(3) v(4)])
   xlabel('{\itN}')

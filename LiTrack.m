@@ -89,13 +89,18 @@ else
   end
   fnf  = [fn '_lit'];				% build string as file name of beamline-file (BL_file)
   fnfm = [fnf '.m'];				% build string as file name of beamline-file (BL_file) including ".m"
-  if ~exist(fnf, 'var')                	% if file does not exist, bomb out
+  if ~exist(fnf, 'file')           	% if file does not exist, bomb out
     error(['File: ' fnfm ' does not exist'])
   end
   Ne = 0;                   % must initialize "Ne" before "eval" to make vs. 7.0.1 work (Nov. 2, 2004)
   eval(fnf);                % run BL-file which is just an M-file (*.m)
-  if exist('blnew', 'var')					% if a replacement beamline is being used...
+  if exist('blnew', 'var')			% if a replacement beamline is being used...
     beamline = blnew;				% overwrite the just-read-in beamline with this (see rand_litrack.m)
+    
+    % change old format matrix to new cell style
+    if ~iscell(beamline)
+        beamline = num2cell(beamline);
+    end
   end
   if ~exist('gzfit', 'var')				% default to no gaussian fits for Z-distribution
     gzfit = 0;
@@ -217,11 +222,20 @@ else                              % if BL-file specifies the Z & dE/E are to be 
   inpf = inp;                     % text for plots
   if ~exist(inp)                  % if ZD-file dose not exists, bomb out
     error(['Z, dE/E input file ' inp ' does not exist'])
-  else                            % if ZD-file does exist...
-    cmnd = ['load ' inp];			    % build string to load ZD-file
-    disp(' ')
-    disp(['Loading z,dE/E-distribution input file: ' inp ' ...'])
-    eval(cmnd);                   % load the ZD-file (ASCII flat format with 2 columns: Z/mm & dE/E/%)
+  else
+     % try loading the matlab version of the file, in case it doesn't exist
+     % we fall back to the array reading
+     try
+        eval(sprintf('load %smat', inp(1:end-2)))
+        fprintf('Loading z,dE/E-distribution input file: %smat', inp(1:end-2))
+     catch
+         % Fallback to old version
+      % if ZD-file does exist...
+        cmnd = ['load ' inp];			    % build string to load ZD-file
+        disp(' ')
+        disp(['Loading z,dE/E-distribution input file: ' inp ' ...'])
+        eval(cmnd);                   % load the ZD-file (ASCII flat format with 2 columns: Z/mm & dE/E/%)
+     end
   end
   i = find(inp=='.');             % ZD-file name format checking (need >0 characters leading the '.')
   if i < 2
@@ -461,6 +475,14 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
 %    if d<p/2
 %      warning('Corregation depth should be > period/2')
 %    end
+
+    % support for the old 1=rect/0=circ format
+    if sum(rc == 1)
+        rc = 'rect';
+    elseif sum(rc == 0)
+        rc = 'circ';
+    end
+
     if ~(strcmp(rc, 'circ') || strcmp(rc, 'rect'))
       error('Last paremeter in dechirper wake must be "circ" or "rect", for rectangular or cylindrical chambers')
     end
@@ -523,7 +545,7 @@ for j  = 1:nb           % loop over all beamline sections of BL-file
     z = z(i);					    % reduce Z array inpose cuts
     E = E(i);					    % reduce energy array inpose cuts
     Ebarcuts = mean(E);		% mean energy after cuts [GeV]
-    disp([sprintf('E-cut (26): %6.3e',100*(1-Ni/Nesim)) '% of bunch'])  
+    disp([sprintf('E-cut (26): %6.3f',100*(1-Ni/Nesim)) '% of bunch'])  
     Nesim = Ni;					  % reduce number of simulation particles
   end
   
