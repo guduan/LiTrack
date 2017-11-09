@@ -56,9 +56,14 @@ if ~exist('Nbin', 'var')
   Nbin = 100;  				% default number simulation particles
 end
 if ~exist('fn', 'var')
-  fn = 'slac.dat';  		% default point wake
+  fn = 'slac.mat';  		% default point wake
 end  
 if ~exist('pcwake', 'var')	% if a point-charge wake is not passed in, load default file
+  if strcmp(fn(end-3:end), '.dat')
+     fn = [fn(1:end-3) 'mat'];
+  end    
+    
+    
   eval(['load ' fn])
   idot = find(fn=='.');
   if isempty(idot)

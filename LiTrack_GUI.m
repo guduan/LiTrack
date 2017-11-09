@@ -1686,6 +1686,11 @@ if strcmp(get(handles.figure1,'SelectionType'),'open')
         inp_struc.beamline = num2cell(inp_struc.beamline);
     end
     
+    % translated zd to mat
+    if strcmp(inp_struc.zd_file(end-2:end), '.zd')
+        inp_struc.zd_file = [inp_struc.zd_file(1:end-2) 'mat'];
+    end
+    
     handles.inp_struc = inp_struc;
     if handles.inp_struc.Int==1
 	  set(handles.Internal,'Value',1)

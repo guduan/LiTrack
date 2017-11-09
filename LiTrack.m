@@ -219,6 +219,11 @@ elseif inp == 'M'                 % if the BL-file specifies a generalized (mult
   z0 = gen_dist(Nesim,tail,sigz0,z0_bar,asym);	% generate general distribution + offset for Z [m]
   d0 = sigd0*randn(Nesim,1) + d0_bar;	% always gaussian dE/E
 else                              % if BL-file specifies the Z & dE/E are to be taken from another file (ZD-file)...
+  % translated zd to mat
+  if strcmp(inp(end-2:end), '.zd')
+     inp = [inp(1:end-2) 'mat'];
+  end  
+    
   inpf = inp;                     % text for plots
   if ~exist(inp)                  % if ZD-file dose not exists, bomb out
     error(['Z, dE/E input file ' inp ' does not exist'])
