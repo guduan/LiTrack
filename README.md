@@ -25,6 +25,7 @@ Please E-mail Paul Emma (SLAC) at: Emma@SLAC.Stanford.edu or Marc Guetg (marcg@s
 # New Features
 - Allow path instead of number of wakefiles (eg element 11 col 4 can be a path)
 - Added names instead of numbers as popupmenu entries
+- Since a considerable time can be spend in file IO only matlab files are accepted to be loaded. In case of old wake or particle files use translate_ascii_matlab.m to translate them prior to running LiTrack
 
 # FAQ
 - If you postprocess something from LiTrack and your beamline contains cutting elements don't forget to filter the output matrixes.
