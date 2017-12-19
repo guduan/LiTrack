@@ -59,10 +59,7 @@ if ~exist('fn', 'var')
   fn = 'slac.mat';  		% default point wake
 end  
 if ~exist('pcwake', 'var')	% if a point-charge wake is not passed in, load default file
-  if strcmp(fn(end-3:end), '.dat')
-     fn = [fn(1:end-3) 'mat'];
-  end    
-    
+  fn = strrep(fn, '.dat', '.mat')
     
   eval(['load ' fn])
   idot = find(fn=='.');

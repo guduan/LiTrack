@@ -59,7 +59,7 @@ comment = 'SPPS w/chicane at 10-8a-c (Dec. 19, 2002)';	% text comment which appe
 %=============================================================================================================
 % CODE<0 makes a plot here, CODE>0 gives no plot here.
 
-beamline = [
+beamline ={
        	   -11		0		    0		    0.104969	0		  0
        	   -11		0.0420	   90.0		    0.104969	1		  2.13
             26	    -0.021		0.021		0		    0		  0
@@ -74,7 +74,7 @@ beamline = [
             22      0.8E-5      0           0           0         0
  		    37		0.01		1		    0		    0		  0
 		   -99		0		    0		    0		    0		  0
-                                                                            ];
+                                                                            };
 
 % Sign conventions used:
 % =====================
